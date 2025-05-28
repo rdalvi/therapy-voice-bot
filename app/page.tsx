@@ -8,8 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const handleCall = async () => {
-    const trimmed = phone.trim();
-    if (!trimmed || !trimmed.match(/^\+1\d{10}$/)) {
+    if (!phone.trim().match(/^\+1\d{10}$/)) {
       setStatus('⚠️ Please enter a valid US number (e.g., +14155552671)');
       return;
     }
@@ -21,59 +20,70 @@ export default function Home() {
       const res = await fetch('/api/vapi/make-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerNumber: trimmed }),
+        body: JSON.stringify({ customerNumber: phone.trim() }),
       });
 
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        console.error('Call failed', data);
+        console.error(data);
         setStatus('❌ Call failed. Check console for details.');
       } else {
-        setStatus('📞 TherapyBot is calling you. Please pick up!');
+        setStatus('📞 TherapyBot is calling you now!');
       }
     } catch (err) {
       console.error(err);
-      setStatus('❌ Network error – please try again.');
+      setStatus('❌ Network error – try again.');
     }
 
     setLoading(false);
   };
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Therapy Voice AI Bot</h1>
-      <p>Enter your phone number and the AI therapist will call you.</p>
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-6">
+      <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+        <h1 className="text-2xl font-bold mb-2">Therapy Voice AI Bot</h1>
+        <p className="text-gray-600 mb-6">
+          Enter your phone number and our AI therapist will call you.
+        </p>
 
-      <input
-        type="tel"
-        placeholder="+1XXXXXXXXXX"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-        disabled={loading}
-        style={{
-          padding: '0.5rem',
-          fontSize: '1rem',
-          marginRight: '1rem',
-          width: '250px',
-        }}
-      />
+        <div className="flex flex-col items-center space-y-4">
+          <input
+            type="tel"
+            placeholder="+1XXXXXXXXXX"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            disabled={loading}
+            className="border border-gray-300 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
 
-      <button
-        onClick={handleCall}
-        disabled={loading}
-        style={{
-          padding: '0.5rem 1rem',
-          fontSize: '1rem',
-          cursor: 'pointer',
-        }}
-      >
-        {loading ? 'Calling…' : 'Call Me'}
-      </button>
+          <button
+            onClick={handleCall}
+            disabled={loading}
+            className={`w-full py-2 rounded-lg text-white font-semibold ${
+              loading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
+            }`}
+          >
+            {loading ? 'Calling...' : 'Call Me'}
+          </button>
 
-      {status && (
-        <p style={{ marginTop: '1rem', fontWeight: 500 }}>{status}</p>
-      )}
+          {status && (
+            <p
+              className={`text-sm ${
+                status.startsWith('📞')
+                  ? 'text-green-600'
+                  : status.startsWith('❌') || status.startsWith('⚠️')
+                  ? 'text-red-600'
+                  : 'text-gray-600'
+              }`}
+            >
+              {status}
+            </p>
+          )}
+        </div>
+      </div>
     </main>
   );
 }
